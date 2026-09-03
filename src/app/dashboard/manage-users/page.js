@@ -1,8 +1,9 @@
-// src/app/dashboard/manage-users/page.js
 "use client";
 import { useEffect, useState } from "react";
 import { axiosSecure } from "@/lib/axios";
 import toast from "react-hot-toast";
+import { motion } from "framer-motion";
+import { FiUsers, FiShield, FiAward, FiStar, FiXCircle } from "react-icons/fi";
 
 export default function ManageUsersPage() {
   const [users, setUsers] = useState([]);
@@ -46,59 +47,116 @@ export default function ManageUsersPage() {
     }
   };
 
-  if (loading) return <div className="p-6">Loading users...</div>;
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-[60vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md min-h-screen">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">Manage Users</h2>
-      
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-gray-100 text-gray-700">
-              <th className="p-4 border-b">Name</th>
-              <th className="p-4 border-b">Email</th>
-              <th className="p-4 border-b">Role</th>
-              <th className="p-4 border-b">Premium</th>
-              <th className="p-4 border-b">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr key={user._id} className="border-b hover:bg-gray-50 transition">
-                <td className="p-4 font-medium">{user.name}</td>
-                <td className="p-4">{user.email}</td>
-                <td className="p-4">
-                  <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
-                    {user.role}
-                  </span>
-                </td>
-                <td className="p-4">
-                  <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${user.isPremium ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-700'}`}>
-                    {user.isPremium ? 'Yes' : 'No'}
-                  </span>
-                </td>
-                <td className="p-4 flex gap-2">
-                  {user.role !== 'admin' && (
-                    <button 
-                      onClick={() => handleUpdateRole(user._id, 'admin')}
-                      className="px-3 py-1 bg-purple-600 text-white text-sm rounded hover:bg-purple-700 transition"
-                    >
-                      Make Admin
-                    </button>
-                  )}
-                  <button 
-                    onClick={() => handleMakePremium(user._id, user.isPremium)}
-                    className="px-3 py-1 bg-orange-600 text-white text-sm rounded hover:bg-orange-700 transition"
-                  >
-                    {user.isPremium ? 'Remove Premium' : 'Make Premium'}
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <div className="max-w-7xl mx-auto pb-12">
+      <div className="mb-8 flex items-center gap-4">
+        <div className="p-3 bg-gradient-to-br from-orange-500 to-amber-500 rounded-2xl shadow-lg shadow-orange-500/30 text-white">
+          <FiUsers className="text-2xl" />
+        </div>
+        <div>
+          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">Manage Users</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">View and manage user roles and premium access.</p>
+        </div>
       </div>
+      
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="bg-white dark:bg-gray-900/80 backdrop-blur-xl border border-gray-100 dark:border-gray-800 rounded-3xl shadow-xl overflow-hidden"
+      >
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse whitespace-nowrap">
+            <thead>
+              <tr className="bg-gray-50/50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 text-sm uppercase tracking-wider border-b border-gray-100 dark:border-gray-800">
+                <th className="p-6 font-semibold">User Details</th>
+                <th className="p-6 font-semibold">Role</th>
+                <th className="p-6 font-semibold">Status</th>
+                <th className="p-6 font-semibold text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+              {users.map((user) => (
+                <tr key={user._id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors duration-200">
+                  <td className="p-6">
+                    <div className="flex items-center gap-4">
+                      <img 
+                        src={user.image || "https://via.placeholder.com/150"} 
+                        alt={user.name} 
+                        className="w-12 h-12 rounded-full object-cover border-2 border-gray-100 dark:border-gray-700"
+                      />
+                      <div>
+                        <p className="font-bold text-gray-900 dark:text-white text-base">{user.name}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
+                      </div>
+                    </div>
+                  </td>
+                  
+                  <td className="p-6">
+                    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide ${
+                      user.role === 'admin' 
+                        ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800' 
+                        : 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-800'
+                    }`}>
+                      <FiShield className={user.role === 'admin' ? "text-indigo-500" : "text-blue-500"} />
+                      {user.role}
+                    </span>
+                  </td>
+                  
+                  <td className="p-6">
+                    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide ${
+                      user.isPremium 
+                        ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800' 
+                        : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700'
+                    }`}>
+                      <FiAward className={user.isPremium ? "text-amber-500" : "text-gray-400"} />
+                      {user.isPremium ? 'Premium' : 'Standard'}
+                    </span>
+                  </td>
+                  
+                  <td className="p-6 text-right">
+                    <div className="flex items-center justify-end gap-3">
+                      {user.role !== 'admin' && (
+                        <button 
+                          onClick={() => handleUpdateRole(user._id, 'admin')}
+                          className="flex items-center gap-2 px-4 py-2 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-sm font-semibold rounded-xl transition-all duration-300"
+                        >
+                          <FiShield /> Make Admin
+                        </button>
+                      )}
+                      <button 
+                        onClick={() => handleMakePremium(user._id, user.isPremium)}
+                        className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-300 ${
+                          user.isPremium
+                            ? "bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400"
+                            : "bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-amber-600 dark:text-amber-400"
+                        }`}
+                      >
+                        {user.isPremium ? <FiXCircle /> : <FiStar />}
+                        {user.isPremium ? 'Remove Premium' : 'Make Premium'}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          
+          {users.length === 0 && (
+            <div className="p-12 text-center text-gray-500 dark:text-gray-400">
+              No users found.
+            </div>
+          )}
+        </div>
+      </motion.div>
     </div>
   );
 }
