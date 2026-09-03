@@ -8,7 +8,7 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
 
 export default function RecipePurchasePage() {
   const { id } = useParams();
-  const recipePrice = 5; // রেসিপি কেনার জন্য একটি ডিফল্ট দাম (৫ ডলার) ধরলাম
+  const recipePrice = 5; 
 
   return (
     <div className="py-12 px-4 bg-gray-50 min-h-screen">
@@ -18,7 +18,6 @@ export default function RecipePurchasePage() {
       </div>
 
       <Elements stripe={stripePromise}>
-        {/* paymentType="recipe" এবং recipeId পাঠানো হচ্ছে */}
         <CheckoutForm price={recipePrice} paymentType="recipe" recipeId={id} />
       </Elements>
     </div>
