@@ -18,9 +18,10 @@ export default function AllRecipesPage() {
     const fetchRecipes = async () => {
       setLoading(true);
       try {
-        const url = selectedCategory && selectedCategory !== "All" 
-          ? `http://localhost:5000/api/recipes?category=${selectedCategory}`
-          : "http://localhost:5000/api/recipes";
+        const url =
+        selectedCategory && selectedCategory !== "All"
+          ? `${process.env.NEXT_PUBLIC_SERVER_URL}/recipes?category=${selectedCategory}`
+          : `${process.env.NEXT_PUBLIC_SERVER_URL}/recipes`;
           
         const res = await axios.get(url);
         

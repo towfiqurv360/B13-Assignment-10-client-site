@@ -60,7 +60,6 @@ export default function RecipeDetails() {
   };
 
   const handlePurchase = () => {
-    // পেমেন্টের পেজে নিয়ে যাওয়ার জন্য রাউট
     router.push(`/recipes/${id}/purchase`);
   };
 

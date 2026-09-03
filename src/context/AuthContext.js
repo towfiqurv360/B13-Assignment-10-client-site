@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await axios.post("http://localhost:5000/api/auth/logout", {}, { withCredentials: true });
+      await axios.post( `${process.env.NEXT_PUBLIC_SERVER_URL}/auth/logout`, {}, { withCredentials: true } );
       setUser(null);
       localStorage.removeItem("user");
       router.push("/login");
@@ -46,7 +46,7 @@ export const AuthProvider = ({ children }) => {
       const result = await signInWithPopup(auth, provider);
       const firebaseUser = result.user;
 
-      const res = await axios.post("http://localhost:5000/api/auth/google-login", {
+      const res = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/auth/google-login`, {
         name: firebaseUser.displayName,
         email: firebaseUser.email,
         image: firebaseUser.photoURL,

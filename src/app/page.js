@@ -26,7 +26,7 @@ export default function HomePage() {
   useEffect(() => {
     const fetchHomeData = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/home");
+        const res = await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}/home`);
         
         setData({
           stats: res.data.stats || { totalRecipes: 0, totalUsers: 0 },
