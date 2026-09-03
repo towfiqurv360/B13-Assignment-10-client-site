@@ -3,7 +3,6 @@ import { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { auth } from "../firebase/firebase.config"; 
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-
 import { axiosSecure } from "../lib/axios"; 
 import toast from "react-hot-toast";
 
@@ -20,7 +19,6 @@ export const AuthProvider = ({ children }) => {
       try {
         setUser(JSON.parse(storedUser));
       } catch (error) {
-        console.error("Failed to parse user data", error);
         localStorage.removeItem("user");
       }
     }
@@ -32,6 +30,15 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("user", JSON.stringify(userData));
   };
 
+  const updateUserProfile = (updatedData) => {
+    setUser((prevUser) => {
+      if (!prevUser) return null;
+      const newUserData = { ...prevUser, ...updatedData };
+      localStorage.setItem("user", JSON.stringify(newUserData));
+      return newUserData;
+    });
+  };
+
   const logout = async () => {
     setLoading(true);
     try {
@@ -39,7 +46,6 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error("Server logout error:", error);
     } finally {
-      
       setUser(null);
       localStorage.removeItem("user");
       toast.success("Logged out successfully");
@@ -61,7 +67,6 @@ export const AuthProvider = ({ children }) => {
       });
 
       if (res.status === 200) {
-        
         const userData = res.data.user;
         login({
           id: userData.id,
@@ -75,13 +80,12 @@ export const AuthProvider = ({ children }) => {
         router.push("/");
       }
     } catch (error) {
-      console.error("Google Sign-In Error:", error);
       toast.error("Google login failed!");
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, googleSignIn, loading, setUser }}>
+    <AuthContext.Provider value={{ user, login, logout, googleSignIn, loading, setUser, updateUserProfile }}>
       {children}
     </AuthContext.Provider>
   );

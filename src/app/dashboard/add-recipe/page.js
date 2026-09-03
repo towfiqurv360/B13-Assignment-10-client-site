@@ -4,7 +4,8 @@ import { useAuth } from "@/context/AuthContext";
 import { axiosSecure } from "@/lib/axios";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { FiUploadCloud } from "react-icons/fi";
+import { FiUploadCloud, FiCheck } from "react-icons/fi";
+import { motion } from "framer-motion";
 import axios from "axios";
 
 export default function AddRecipePage() {
@@ -12,6 +13,7 @@ export default function AddRecipePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
 
   const [formData, setFormData] = useState({
     recipeName: "",
@@ -22,7 +24,6 @@ export default function AddRecipePage() {
     ingredients: "",
     instructions: "",
   });
-  const [imageFile, setImageFile] = useState(null);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -49,12 +50,30 @@ export default function AddRecipePage() {
       
       const imgbbResponse = await axios.post(
         `https://api.imgbb.com/1/upload?key=${imgbbKey}`,
-        imageFormData
+        imageFormData,
+        { headers: { "Content-Type": "multipart/form-data" } }
       );
+      
       const imageUrl = imgbbResponse.data.data.display_url;
 
+      const formattedIngredients = formData.ingredients
+        .split(",")
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0);
+
+      const formattedInstructions = formData.instructions
+        .split("\n")
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0);
+
       const recipeData = {
-        ...formData,
+        recipeName: formData.recipeName,
+        category: formData.category,
+        cuisineType: formData.cuisineType,
+        difficultyLevel: formData.difficultyLevel,
+        preparationTime: formData.preparationTime,
+        ingredients: formattedIngredients,
+        instructions: formattedInstructions,
         recipeImage: imageUrl,
         authorName: user?.name || "Unknown",
         authorEmail: user?.email,
@@ -67,15 +86,14 @@ export default function AddRecipePage() {
       const backendResponse = await axiosSecure.post("/recipes", recipeData);
 
       if (backendResponse.status === 201 || backendResponse.status === 200) {
-        toast.success("Recipe added successfully!");
+        toast.success("Recipe published successfully!");
         router.push("/dashboard/my-recipes");
       }
     } catch (error) {
-      console.error("Add Recipe Error:", error);
       if (error.response?.status === 403) {
         toast.error("Limit reached! Upgrade to premium to add more.");
       } else {
-        toast.error(error.response?.data?.message || "Failed to add recipe. Check console.");
+        toast.error("Failed to add recipe. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -83,79 +101,154 @@ export default function AddRecipePage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 mt-6 transition-colors duration-300">
-      <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6 border-b pb-4 border-gray-200 dark:border-gray-700">
-        Share a New Recipe
-      </h2>
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Recipe Name</label>
-            <input type="text" name="recipeName" required onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 outline-none" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category</label>
-            <select name="category" required onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 outline-none">
-              <option value="">Select Category</option>
-              <option value="Breakfast">Breakfast</option>
-              <option value="Lunch">Lunch</option>
-              <option value="Dinner">Dinner</option>
-              <option value="Dessert">Dessert</option>
-              <option value="Snack">Snack</option>
-            </select>
-          </div>
+    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0a] transition-colors duration-300 py-12 px-4 sm:px-6 lg:px-8">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="max-w-4xl mx-auto bg-white dark:bg-[#121212] rounded-[2rem] border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden"
+      >
+        <div className="p-8 md:p-12 border-b border-gray-100 dark:border-gray-800">
+          <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-2">
+            Publish New Recipe
+          </h2>
+          <p className="text-gray-500 dark:text-gray-400 text-sm">
+            Share your culinary masterpiece with the community.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cuisine Type</label>
-            <input type="text" name="cuisineType" required onChange={handleChange} placeholder="e.g., Italian, Bengali" className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 outline-none" />
+        <form onSubmit={handleSubmit} className="p-8 md:p-12 space-y-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">Recipe Name</label>
+              <input 
+                type="text" 
+                name="recipeName" 
+                required 
+                onChange={handleChange} 
+                className="w-full px-5 py-3.5 rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:border-gray-900 dark:focus:border-white focus:ring-0 outline-none transition-colors" 
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">Category</label>
+              <select 
+                name="category" 
+                required 
+                onChange={handleChange} 
+                className="w-full px-5 py-3.5 rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:border-gray-900 dark:focus:border-white focus:ring-0 outline-none transition-colors appearance-none cursor-pointer"
+              >
+                <option value="" disabled selected>Select Category</option>
+                <option value="Breakfast">Breakfast</option>
+                <option value="Lunch">Lunch</option>
+                <option value="Dinner">Dinner</option>
+                <option value="Dessert">Dessert</option>
+                <option value="Snack">Snack</option>
+              </select>
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Difficulty Level</label>
-            <select name="difficultyLevel" required onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 outline-none">
-              <option value="">Select Level</option>
-              <option value="Easy">Easy</option>
-              <option value="Medium">Medium</option>
-              <option value="Hard">Hard</option>
-            </select>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div>
+              <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">Cuisine Type</label>
+              <input 
+                type="text" 
+                name="cuisineType" 
+                required 
+                onChange={handleChange} 
+                placeholder="e.g. Italian" 
+                className="w-full px-5 py-3.5 rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:border-gray-900 dark:focus:border-white focus:ring-0 outline-none transition-colors" 
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">Difficulty</label>
+              <select 
+                name="difficultyLevel" 
+                required 
+                onChange={handleChange} 
+                className="w-full px-5 py-3.5 rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:border-gray-900 dark:focus:border-white focus:ring-0 outline-none transition-colors appearance-none cursor-pointer"
+              >
+                <option value="" disabled selected>Select Level</option>
+                <option value="Easy">Easy</option>
+                <option value="Medium">Medium</option>
+                <option value="Hard">Hard</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">Prep Time</label>
+              <input 
+                type="text" 
+                name="preparationTime" 
+                required 
+                onChange={handleChange} 
+                placeholder="e.g. 30 mins" 
+                className="w-full px-5 py-3.5 rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:border-gray-900 dark:focus:border-white focus:ring-0 outline-none transition-colors" 
+              />
+            </div>
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Prep Time (mins)</label>
-            <input type="number" name="preparationTime" required onChange={handleChange} placeholder="e.g., 30" className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 outline-none" />
+            <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">Ingredients (Comma Separated)</label>
+            <textarea 
+              name="ingredients" 
+              required 
+              rows="3" 
+              onChange={handleChange} 
+              placeholder="Flour, Sugar, Eggs, Milk..." 
+              className="w-full px-5 py-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:border-gray-900 dark:focus:border-white focus:ring-0 outline-none resize-none transition-colors"
+            ></textarea>
           </div>
-        </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Ingredients</label>
-          <textarea name="ingredients" required rows="3" onChange={handleChange} placeholder="List ingredients separated by commas..." className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 outline-none resize-none"></textarea>
-        </div>
+          <div>
+            <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">Instructions (One step per line)</label>
+            <textarea 
+              name="instructions" 
+              required 
+              rows="5" 
+              onChange={handleChange} 
+              placeholder="Mix the dry ingredients.&#10;Add milk and stir well.&#10;Bake for 30 minutes..." 
+              className="w-full px-5 py-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:border-gray-900 dark:focus:border-white focus:ring-0 outline-none resize-none transition-colors"
+            ></textarea>
+          </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Instructions</label>
-          <textarea name="instructions" required rows="4" onChange={handleChange} placeholder="Step-by-step instructions..." className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 outline-none resize-none"></textarea>
-        </div>
+          <div>
+            <label className="block text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">Cover Image</label>
+            <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-gray-200 dark:border-gray-800 border-dashed rounded-xl cursor-pointer bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800/80 transition-all overflow-hidden relative group">
+              {imagePreview ? (
+                <>
+                  <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="text-white font-medium text-sm">Change Image</span>
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  <FiUploadCloud className="w-10 h-10 text-gray-400 mb-3" />
+                  <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Click to upload an image</p>
+                  <p className="text-xs text-gray-400 mt-1">JPG, PNG or WEBP (Max 2MB)</p>
+                </div>
+              )}
+              <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+            </label>
+          </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Recipe Image</label>
-          <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
-            {imagePreview ? (
-              <img src={imagePreview} alt="Preview" className="h-28 object-contain rounded" />
-            ) : (
-              <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                <FiUploadCloud className="w-8 h-8 text-gray-400 mb-2" />
-                <p className="text-sm text-gray-500 dark:text-gray-400">Click to upload image</p>
-              </div>
-            )}
-            <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
-          </label>
-        </div>
-
-        <button type="submit" disabled={loading} className="w-full py-4 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg shadow-md transition duration-300 disabled:bg-gray-400 flex justify-center items-center gap-2">
-          {loading ? "Uploading & Saving..." : "Add Recipe"}
-        </button>
-      </form>
+          <div className="pt-6 border-t border-gray-100 dark:border-gray-800">
+            <button 
+              type="submit" 
+              disabled={loading} 
+              className="w-full py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold text-lg rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none flex justify-center items-center gap-2"
+            >
+              {loading ? (
+                <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white dark:border-gray-900"></div>
+              ) : (
+                <>
+                  <FiCheck className="text-xl" />
+                  Publish Recipe
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </motion.div>
     </div>
   );
 }
