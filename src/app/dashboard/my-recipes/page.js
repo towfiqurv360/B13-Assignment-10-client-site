@@ -4,7 +4,7 @@ import { axiosSecure } from "@/lib/axios";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
-import { FiTrash2, FiEye, FiBookOpen, FiPlus } from "react-icons/fi";
+import { FiTrash2, FiEye, FiBookOpen, FiPlus, FiEdit } from "react-icons/fi";
 
 export default function MyRecipesPage() {
   const [recipes, setRecipes] = useState([]);
@@ -131,6 +131,13 @@ export default function MyRecipesPage() {
                           title="View Recipe"
                         >
                           <FiEye className="text-lg" />
+                        </Link>
+                        <Link 
+                          href={`/dashboard/edit-recipe/${recipe._id}`} 
+                          className="p-2 text-green-500 hover:text-green-600 bg-green-50 hover:bg-green-100 dark:bg-green-900/20 dark:hover:bg-green-900/40 rounded-lg transition-colors duration-300"
+                          title="Edit Recipe"
+                        >
+                          <FiEdit className="text-lg" />
                         </Link>
                         <button 
                           onClick={() => handleDelete(recipe._id)} 

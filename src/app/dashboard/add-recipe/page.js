@@ -58,7 +58,7 @@ export default function AddRecipePage() {
         recipeImage: imageUrl,
         authorName: user?.name || "Unknown",
         authorEmail: user?.email,
-        authorId: user?.userId || user?._id, 
+        authorId: user?.id || user?._id || user?.userId, 
         likesCount: 0,
         isFeatured: false,
         status: "active"
