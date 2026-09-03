@@ -1,9 +1,10 @@
-// src/app/recipes/[id]/page.js
 "use client";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { axiosSecure } from "@/lib/axios";
-import { FaHeart, FaRegHeart, FaBookmark, FaFlag, FaShoppingCart } from "react-icons/fa";
+import { FiHeart, FiBookmark, FiFlag, FiShoppingCart, FiClock, FiActivity, FiGlobe } from "react-icons/fi";
+import { motion } from "framer-motion";
+import toast from "react-hot-toast";
 
 export default function RecipeDetails() {
   const { id } = useParams();
@@ -22,7 +23,7 @@ export default function RecipeDetails() {
       const res = await axiosSecure.get(`/recipes/${id}`);
       setRecipe(res.data);
     } catch (error) {
-      console.error("Error fetching recipe:", error);
+      toast.error("Error fetching recipe");
     } finally {
       setLoading(false);
     }
@@ -30,20 +31,19 @@ export default function RecipeDetails() {
 
   const handleLike = async () => {
     try {
-      // Assuming backend has a PATCH route for likes: /recipes/:id/like
       await axiosSecure.patch(`/recipes/${id}/like`);
-      fetchRecipeDetails(); // Refresh data to show updated likes
+      fetchRecipeDetails(); 
     } catch (error) {
-      alert("Please login to like this recipe.");
+      toast.error("Please login to like this recipe.");
     }
   };
 
   const handleFavorite = async () => {
     try {
       await axiosSecure.post("/favorites", { recipeId: id });
-      alert("Added to favorites!");
+      toast.success("Added to favorites!");
     } catch (error) {
-      alert("Please login to add to favorites.");
+      toast.error("Please login to add to favorites.");
     }
   };
 
@@ -51,11 +51,11 @@ export default function RecipeDetails() {
     e.preventDefault();
     try {
       await axiosSecure.post("/reports", { recipeId: id, reason: reportReason });
-      alert("Recipe reported successfully.");
+      toast.success("Recipe reported successfully.");
       setIsReportModalOpen(false);
       setReportReason("");
     } catch (error) {
-      alert("Failed to report recipe.");
+      toast.error("Failed to report recipe.");
     }
   };
 
@@ -63,105 +63,200 @@ export default function RecipeDetails() {
     router.push(`/recipes/${id}/purchase`);
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading recipe...</div>;
-  if (!recipe) return <div className="min-h-screen flex items-center justify-center">Recipe not found!</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0a] flex flex-col justify-center items-center">
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-gray-900 dark:border-white"></div>
+      </div>
+    );
+  }
+
+  if (!recipe) {
+    return (
+      <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0a] flex flex-col justify-center items-center px-4">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Recipe Not Found</h2>
+        <p className="text-gray-500 dark:text-gray-400">The recipe you are looking for does not exist or has been removed.</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-12 min-h-screen">
-      <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-        {/* Image Section */}
-        <div className="w-full h-96 relative">
-          <img src={recipe.recipeImage} alt={recipe.recipeName} className="w-full h-full object-cover" />
-        </div>
-
-        {/* Details Section */}
-        <div className="p-8">
-          <div className="flex flex-wrap justify-between items-start mb-6">
-            <div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">{recipe.recipeName}</h1>
-              <p className="text-gray-600">By <span className="font-semibold">{recipe.authorName}</span> | Category: {recipe.category}</p>
-            </div>
+    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0a] transition-colors duration-300 py-12 md:py-24">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="bg-white dark:bg-[#121212] rounded-[2rem] border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden"
+        >
+          <div className="relative h-[40vh] md:h-[60vh] w-full bg-gray-100 dark:bg-gray-900 overflow-hidden">
+            <img 
+              src={recipe.recipeImage || "https://images.unsplash.com/photo-1495521821757-a1efb6729352?q=80&w=1200&auto=format&fit=crop"} 
+              alt={recipe.recipeName} 
+              className="w-full h-full object-cover" 
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
             
-            {/* Action Buttons */}
-            <div className="flex gap-4 mt-4 md:mt-0">
-              <button onClick={handleLike} className="flex items-center gap-2 px-4 py-2 bg-pink-50 text-pink-600 rounded-lg hover:bg-pink-100 transition">
-                <FaHeart /> <span>{recipe.likesCount || 0}</span>
-              </button>
-              <button onClick={handleFavorite} className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition">
-                <FaBookmark /> Save
-              </button>
-              <button onClick={() => setIsReportModalOpen(true)} className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition">
-                <FaFlag /> Report
-              </button>
+            <div className="absolute bottom-0 left-0 w-full p-8 md:p-12">
+              <span className="inline-block px-4 py-1.5 mb-4 bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-bold uppercase tracking-widest rounded-full">
+                {recipe.category}
+              </span>
+              <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight mb-4 drop-shadow-md">
+                {recipe.recipeName}
+              </h1>
+              <p className="text-white/80 text-sm md:text-base font-medium flex items-center gap-2">
+                Crafted by <span className="font-bold text-white">{recipe.authorName}</span>
+              </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <span className="block text-sm text-gray-500">Cuisine</span>
-              <span className="font-semibold text-gray-800">{recipe.cuisineType}</span>
-            </div>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <span className="block text-sm text-gray-500">Difficulty</span>
-              <span className="font-semibold text-gray-800">{recipe.difficultyLevel}</span>
-            </div>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <span className="block text-sm text-gray-500">Prep Time</span>
-              <span className="font-semibold text-gray-800">{recipe.preparationTime}</span>
-            </div>
-          </div>
+          <div className="p-8 md:p-12">
+            <div className="flex flex-wrap items-center justify-between gap-6 pb-10 border-b border-gray-100 dark:border-gray-800">
+              <div className="flex flex-wrap items-center gap-4 md:gap-8">
+                <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
+                  <div className="p-2.5 bg-gray-50 dark:bg-gray-900 rounded-full border border-gray-100 dark:border-gray-800">
+                    <FiGlobe className="text-lg" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">Cuisine</p>
+                    <p className="font-semibold text-gray-900 dark:text-white">{recipe.cuisineType}</p>
+                  </div>
+                </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            <div>
-              <h3 className="text-2xl font-bold mb-4 text-gray-800">Ingredients</h3>
-              <ul className="list-disc pl-5 space-y-2 text-gray-700">
-                {recipe.ingredients.map((item, index) => (
-                  <li key={index}>{item}</li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-2xl font-bold mb-4 text-gray-800">Instructions</h3>
-              <ul className="list-decimal pl-5 space-y-3 text-gray-700">
-                {recipe.instructions.map((step, index) => (
-                  <li key={index} className="pl-2">{step}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
+                <div className="w-px h-10 bg-gray-200 dark:bg-gray-800 hidden md:block"></div>
 
-          {/* Purchase Button */}
-          <div className="mt-12 text-center border-t pt-8">
-            <button onClick={handlePurchase} className="inline-flex items-center gap-2 bg-orange-600 text-white font-bold text-lg px-8 py-4 rounded-full shadow-lg hover:bg-orange-700 transition transform hover:scale-105">
-              <FaShoppingCart /> Buy This Recipe
-            </button>
+                <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
+                  <div className="p-2.5 bg-gray-50 dark:bg-gray-900 rounded-full border border-gray-100 dark:border-gray-800">
+                    <FiActivity className="text-lg" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">Difficulty</p>
+                    <p className="font-semibold text-gray-900 dark:text-white">{recipe.difficultyLevel}</p>
+                  </div>
+                </div>
+
+                <div className="w-px h-10 bg-gray-200 dark:bg-gray-800 hidden md:block"></div>
+
+                <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
+                  <div className="p-2.5 bg-gray-50 dark:bg-gray-900 rounded-full border border-gray-100 dark:border-gray-800">
+                    <FiClock className="text-lg" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">Prep Time</p>
+                    <p className="font-semibold text-gray-900 dark:text-white">{recipe.preparationTime}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={handleLike} 
+                  className="flex items-center gap-2 px-5 py-2.5 bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 rounded-full font-medium transition-all"
+                >
+                  <FiHeart className={recipe.likesCount > 0 ? "fill-orange-500 text-orange-500" : ""} /> 
+                  <span>{recipe.likesCount || 0}</span>
+                </button>
+                <button 
+                  onClick={handleFavorite} 
+                  className="p-2.5 bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 rounded-full transition-all"
+                  title="Save Recipe"
+                >
+                  <FiBookmark className="text-lg" />
+                </button>
+                <button 
+                  onClick={() => setIsReportModalOpen(true)} 
+                  className="p-2.5 bg-gray-50 dark:bg-gray-900 hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 hover:text-red-600 border border-gray-200 dark:border-gray-700 hover:border-red-200 dark:hover:border-red-800/50 rounded-full transition-all"
+                  title="Report"
+                >
+                  <FiFlag className="text-lg" />
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 mt-12">
+              <div className="lg:col-span-4">
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Ingredients</h3>
+                <ul className="space-y-4">
+                  {recipe.ingredients.map((item, index) => (
+                    <li key={index} className="flex items-start gap-3">
+                      <div className="w-1.5 h-1.5 rounded-full bg-orange-500 mt-2 flex-shrink-0"></div>
+                      <span className="text-gray-600 dark:text-gray-400 font-medium leading-relaxed">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="lg:col-span-8">
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Instructions</h3>
+                <div className="space-y-8">
+                  {recipe.instructions.map((step, index) => (
+                    <div key={index} className="flex gap-5">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white flex items-center justify-center font-bold text-sm border border-gray-200 dark:border-gray-700">
+                        {index + 1}
+                      </div>
+                      <p className="text-gray-600 dark:text-gray-400 leading-relaxed pt-1">
+                        {step}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-16 pt-10 border-t border-gray-100 dark:border-gray-800 flex justify-center">
+              <button 
+                onClick={handlePurchase} 
+                className="group flex items-center gap-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-semibold text-lg px-8 py-4 rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
+              >
+                <FiShoppingCart className="text-xl group-hover:scale-110 transition-transform" /> 
+                Buy This Recipe
+              </button>
+            </div>
           </div>
-        </div>
+        </motion.div>
       </div>
 
-      {/* Report Modal */}
       {isReportModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg w-full max-w-md">
-            <h3 className="text-xl font-bold mb-4">Report Recipe</h3>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white dark:bg-[#121212] p-8 rounded-3xl w-full max-w-md border border-gray-200 dark:border-gray-800 shadow-2xl"
+          >
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Report Recipe</h3>
+            <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">Help us understand what's wrong with this recipe.</p>
+            
             <form onSubmit={handleReport}>
               <select 
                 required
-                className="w-full border p-2 rounded mb-4 focus:ring-orange-500"
+                className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm rounded-xl px-4 py-3.5 mb-6 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-white transition-all cursor-pointer"
                 value={reportReason}
                 onChange={(e) => setReportReason(e.target.value)}
               >
-                <option value="">Select a reason</option>
-                <option value="Spam">Spam</option>
-                <option value="Offensive Content">Offensive Content</option>
-                <option value="Copyright Issue">Copyright Issue</option>
+                <option value="" disabled>Select a reason</option>
+                <option value="Spam">Spam or misleading</option>
+                <option value="Offensive Content">Offensive content</option>
+                <option value="Copyright Issue">Copyright violation</option>
               </select>
-              <div className="flex justify-end gap-2">
-                <button type="button" onClick={() => setIsReportModalOpen(false)} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Cancel</button>
-                <button type="submit" className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Submit Report</button>
+              
+              <div className="flex justify-end gap-3">
+                <button 
+                  type="button" 
+                  onClick={() => setIsReportModalOpen(false)} 
+                  className="px-6 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="px-6 py-2.5 bg-red-600 text-white font-medium rounded-full hover:bg-red-700 transition-colors shadow-md shadow-red-600/20"
+                >
+                  Submit Report
+                </button>
               </div>
             </form>
-          </div>
+          </motion.div>
         </div>
       )}
     </div>

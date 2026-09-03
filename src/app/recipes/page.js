@@ -2,8 +2,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Link from "next/link";
-import { FaHeart } from "react-icons/fa";
-import { FiUser, FiSearch } from "react-icons/fi";
+import { FiHeart, FiUser, FiSearch, FiArrowRight } from "react-icons/fi";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 
@@ -18,7 +17,9 @@ export default function AllRecipesPage() {
     const fetchRecipes = async () => {
       setLoading(true);
       try {
-        const url = selectedCategory && selectedCategory !== "All" ? `${process.env.NEXT_PUBLIC_SERVER_URL}/recipes?category=${selectedCategory}` : `${process.env.NEXT_PUBLIC_SERVER_URL}/recipes`;
+        const url = selectedCategory && selectedCategory !== "All"
+          ? `${process.env.NEXT_PUBLIC_SERVER_URL}/recipes?category=${selectedCategory}`
+          : `${process.env.NEXT_PUBLIC_SERVER_URL}/recipes`;
           
         const res = await axios.get(url);
         
@@ -42,71 +43,73 @@ export default function AllRecipesPage() {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
-      transition: { staggerChildren: 0.1 }
+      transition: { staggerChildren: 0.05 }
     }
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 15 },
     show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] dark:bg-[#0b0f19] transition-colors duration-500 py-16 relative overflow-hidden">
-      
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-        <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-orange-400/10 dark:bg-orange-600/5 rounded-full blur-3xl"></div>
-        <div className="absolute top-[20%] -right-[10%] w-[30%] h-[30%] bg-amber-400/10 dark:bg-amber-600/5 rounded-full blur-3xl"></div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0a] transition-colors duration-300 py-16 md:py-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
+        <div className="flex flex-col items-center justify-center text-center mb-16">
+          <motion.h1 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-3xl md:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-4"
+          >
+            Culinary Collection
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.1 }}
+            className="text-gray-500 dark:text-gray-400 max-w-2xl text-sm md:text-base"
+          >
+            Explore our curated selection of premium recipes designed for every palate and occasion.
+          </motion.p>
+        </div>
+
         <motion.div 
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          transition={{ delay: 0.2 }}
+          className="flex flex-wrap justify-center gap-2 md:gap-3 mb-16"
         >
-          <span className="inline-block py-1 px-3 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-sm font-bold uppercase tracking-widest mb-4">
-            Discover
-          </span>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-amber-500 mb-8 drop-shadow-sm tracking-tight">
-            Our Culinary Collection
-          </h1>
-          
-          <div className="flex flex-wrap justify-center gap-3 md:gap-4 max-w-3xl mx-auto p-2 bg-white/50 dark:bg-gray-900/50 backdrop-blur-xl rounded-3xl border border-gray-200/50 dark:border-gray-800/50 shadow-sm">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-6 py-2.5 rounded-2xl text-sm font-bold transition-all duration-300 ${
-                  selectedCategory === cat
-                    ? "bg-gradient-to-r from-orange-600 to-amber-500 text-white shadow-lg shadow-orange-500/30 transform scale-105"
-                    : "bg-transparent text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-800 hover:text-orange-500 dark:hover:text-orange-400"
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 border ${
+                selectedCategory === cat
+                  ? "bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-gray-900 dark:border-white shadow-md transform scale-105"
+                  : "bg-white dark:bg-[#121212] text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
         </motion.div>
 
         {loading ? (
           <div className="flex flex-col justify-center items-center h-64 gap-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
-            <p className="text-gray-500 dark:text-gray-400 font-medium">Curating recipes for you...</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900 dark:border-white"></div>
           </div>
         ) : recipes.length === 0 ? (
           <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-24 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl border border-gray-100 dark:border-gray-800 shadow-xl"
+            className="text-center py-24 bg-white dark:bg-[#121212] rounded-3xl border border-gray-200 dark:border-gray-800 shadow-sm"
           >
-            <div className="w-20 h-20 bg-gray-50 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-400">
-              <FiSearch className="text-3xl" />
+            <div className="w-16 h-16 bg-gray-50 dark:bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-5">
+              <FiSearch className="text-2xl text-gray-400" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">No recipes found</h3>
-            <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No recipes found</h3>
+            <p className="text-gray-500 dark:text-gray-400 text-sm max-w-md mx-auto">
               We couldn't find any recipes in the "{selectedCategory}" category at the moment.
             </p>
           </motion.div>
@@ -115,57 +118,60 @@ export default function AllRecipesPage() {
             variants={containerVariants}
             initial="hidden"
             animate="show"
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 xl:gap-8"
           >
             {recipes.map((recipe) => (
               <motion.div 
                 variants={itemVariants}
                 key={recipe._id} 
-                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl border border-gray-100 dark:border-gray-800 transition-all duration-500 group flex flex-col transform hover:-translate-y-1"
+                className="group flex flex-col bg-white dark:bg-[#121212] rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 hover:shadow-2xl hover:shadow-gray-200/50 dark:hover:shadow-black/50 transition-all duration-300"
               >
-                <div className="h-56 overflow-hidden relative">
+                <div className="relative h-56 overflow-hidden bg-gray-100 dark:bg-gray-900">
                   <img 
-                    src={recipe.recipeImage || "https://via.placeholder.com/400"} 
+                    src={recipe.recipeImage || "https://images.unsplash.com/photo-1495521821757-a1efb6729352?q=80&w=400&auto=format&fit=crop"} 
                     alt={recipe.recipeName} 
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out" 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" 
                   />
                   
-                  <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   
-                  <div className="absolute top-4 right-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm z-10 border border-white/20 dark:border-gray-700/50">
-                    <FaHeart className="text-orange-500 text-sm" /> 
-                    <span className="text-xs font-extrabold text-gray-900 dark:text-white">
+                  <div className="absolute top-4 right-4 bg-white/95 dark:bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm border border-white/20 dark:border-white/10">
+                    <FiHeart className="text-gray-900 dark:text-white text-xs fill-transparent" /> 
+                    <span className="text-xs font-bold text-gray-900 dark:text-white">
                       {recipe.likesCount || 0}
                     </span>
                   </div>
 
-                  <div className="absolute bottom-4 left-4 z-10">
-                    <span className="px-3 py-1 bg-orange-500 text-white text-[10px] font-black uppercase tracking-widest rounded-lg shadow-sm">
+                  <div className="absolute top-4 left-4">
+                    <span className="px-3 py-1.5 bg-white/95 dark:bg-black/80 backdrop-blur-md text-gray-900 dark:text-white text-[10px] font-bold uppercase tracking-widest rounded-full shadow-sm border border-white/20 dark:border-white/10">
                       {recipe.category}
                     </span>
                   </div>
                 </div>
                 
                 <div className="p-6 flex flex-col flex-grow">
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 line-clamp-2 group-hover:text-orange-500 dark:group-hover:text-orange-400 transition-colors">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-3 line-clamp-1">
                     {recipe.recipeName}
                   </h3>
                   
-                  <div className="flex items-center gap-2 mb-6 text-gray-500 dark:text-gray-400 flex-grow">
-                    <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-orange-500">
-                      <FiUser className="text-xs" />
+                  <div className="flex items-center gap-2.5 mb-6 text-gray-500 dark:text-gray-400">
+                    <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                      <FiUser className="text-[10px]" />
                     </div>
-                    <span className="text-sm font-semibold truncate">
+                    <span className="text-sm font-medium truncate">
                       {recipe.authorName}
                     </span>
                   </div>
                   
-                  <Link 
-                    href={`/recipes/${recipe._id}`} 
-                    className="block text-center w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-bold py-3.5 rounded-xl group-hover:bg-gradient-to-r group-hover:from-orange-600 group-hover:to-amber-500 group-hover:text-white transition-all duration-300 shadow-sm"
-                  >
-                    View Recipe
-                  </Link>
+                  <div className="mt-auto pt-5 border-t border-gray-100 dark:border-gray-800/60">
+                    <Link 
+                      href={`/recipes/${recipe._id}`} 
+                      className="inline-flex items-center gap-2 text-sm font-bold text-gray-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 transition-colors group/link"
+                    >
+                      View Recipe 
+                      <FiArrowRight className="transform group-hover/link:translate-x-1 transition-transform duration-300" />
+                    </Link>
+                  </div>
                 </div>
               </motion.div>
             ))}
