@@ -1,10 +1,10 @@
-// src/context/AuthContext.js
 "use client";
 import { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { auth } from "../firebase/firebase.config"; 
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import axios from "axios";
+
+import { axiosSecure } from "../lib/axios"; 
 import toast from "react-hot-toast";
 
 const AuthContext = createContext();
@@ -17,7 +17,12 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (error) {
+        console.error("Failed to parse user data", error);
+        localStorage.removeItem("user");
+      }
     }
     setLoading(false);
   }, []);
@@ -28,15 +33,18 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
+    setLoading(true);
     try {
-      await axios.post( `${process.env.NEXT_PUBLIC_SERVER_URL}/auth/logout`, {}, { withCredentials: true } );
+      await axiosSecure.post(`/auth/logout`);
+    } catch (error) {
+      console.error("Server logout error:", error);
+    } finally {
+      
       setUser(null);
       localStorage.removeItem("user");
-      router.push("/login");
       toast.success("Logged out successfully");
-    } catch (error) {
-      console.error(error);
-      toast.error("Logout failed");
+      router.push("/login");
+      setLoading(false);
     }
   };
 
@@ -46,18 +54,22 @@ export const AuthProvider = ({ children }) => {
       const result = await signInWithPopup(auth, provider);
       const firebaseUser = result.user;
 
-      const res = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/auth/google-login`, {
+      const res = await axiosSecure.post(`/auth/google-login`, {
         name: firebaseUser.displayName,
         email: firebaseUser.email,
         image: firebaseUser.photoURL,
-      }, { withCredentials: true });
+      });
 
       if (res.status === 200) {
+        
+        const userData = res.data.user;
         login({
-          name: res.data.name,
-          email: firebaseUser.email,
-          role: res.data.role,
-          image: res.data.image
+          id: userData.id,
+          name: userData.name,
+          email: userData.email,
+          role: userData.role,
+          image: userData.image,
+          isPremium: userData.isPremium
         });
         toast.success("Google Login Successful!");
         router.push("/");

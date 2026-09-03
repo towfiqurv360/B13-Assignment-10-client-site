@@ -1,180 +1,179 @@
+// src/app/login/page.js
 "use client";
-import { useState, useEffect } from "react";
-import axios from "axios";
-import Link from "next/link";
-import { FaHeart } from "react-icons/fa";
-import { FiUser, FiSearch } from "react-icons/fi";
-import { motion } from "framer-motion";
 import toast from "react-hot-toast";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { axiosSecure } from "@/lib/axios";
+import Cookies from "js-cookie";
+import { motion } from "framer-motion";
+import { FcGoogle } from "react-icons/fc";
+import { FiMail, FiLock, FiAlertCircle, FiEye, FiEyeOff } from "react-icons/fi";
+import { useAuth } from "@/context/AuthContext";
 
-export default function AllRecipesPage() {
-  const [recipes, setRecipes] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState("All");
+export default function LoginPage() {
+  const router = useRouter();
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const { googleSignIn } = useAuth();
 
-  const categories = ["All", "Breakfast", "Lunch", "Dinner", "Dessert", "Snack"];
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
 
-  useEffect(() => {
-    const fetchRecipes = async () => {
-      setLoading(true);
-      try {
-        const url =
-        selectedCategory && selectedCategory !== "All"
-          ? `${process.env.NEXT_PUBLIC_SERVER_URL}/recipes?category=${selectedCategory}`
-          : `${process.env.NEXT_PUBLIC_SERVER_URL}/recipes`;
-          
-        const res = await axios.get(url);
+    try {
+      const res = await axiosSecure.post("/auth/login", formData);
+      if (res.status === 200) {
+        Cookies.set("token", "logged_in", { expires: 7 }); 
         
-        const fetchedData = Array.isArray(res.data) 
-          ? res.data 
-          : (res.data?.data || res.data?.recipes || []);
-          
-        setRecipes(fetchedData);
-      } catch (error) {
-        toast.error("Failed to fetch recipes");
-        setRecipes([]);
-      } finally {
-        setLoading(false);
+        localStorage.setItem("user", JSON.stringify({
+          name: res.data.name,
+          email: formData.email,
+          role: res.data.role,
+          image: res.data.image
+        }));
+
+        toast.success("Login successful!");
+        window.location.href = "/dashboard";
       }
-    };
-
-    fetchRecipes();
-  }, [selectedCategory]);
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1 }
+    } catch (err) {
+      setError(err.response?.data?.message || "Invalid email or password");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
-  };
-
   return (
-    <div className="min-h-screen bg-[#f8fafc] dark:bg-[#0b0f19] transition-colors duration-500 py-16 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-orange-100 dark:from-gray-950 dark:to-gray-900 py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-500">
       
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-        <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-orange-400/10 dark:bg-orange-600/5 rounded-full blur-3xl"></div>
-        <div className="absolute top-[20%] -right-[10%] w-[30%] h-[30%] bg-amber-400/10 dark:bg-amber-600/5 rounded-full blur-3xl"></div>
+        <div className="absolute -top-24 -left-24 w-96 h-96 bg-orange-400/20 dark:bg-orange-600/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-amber-400/20 dark:bg-amber-600/10 rounded-full blur-3xl"></div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
-          <span className="inline-block py-1 px-3 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 text-sm font-bold uppercase tracking-widest mb-4">
-            Discover
-          </span>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-amber-500 mb-8 drop-shadow-sm tracking-tight">
-            Our Culinary Collection
-          </h1>
+      <motion.div 
+        initial={{ opacity: 0, y: 30 }} 
+        animate={{ opacity: 1, y: 0 }} 
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="max-w-md w-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-8 sm:p-10 rounded-3xl shadow-2xl border border-white/40 dark:border-gray-800 z-10"
+      >
+        <div className="text-center mb-10">
+          <motion.div 
+            initial={{ scale: 0 }} 
+            animate={{ scale: 1 }} 
+            transition={{ delay: 0.2, type: "spring", stiffness: 150 }}
+            className="w-16 h-16 bg-gradient-to-br from-orange-500 to-amber-500 text-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-orange-500/30"
+          >
+            <FiLock className="text-3xl" />
+          </motion.div>
+          <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+            Welcome Back
+          </h2>
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+            Sign in to your account to continue
+          </p>
+        </div>
+
+        <form className="space-y-6" onSubmit={handleSubmit}>
           
-          <div className="flex flex-wrap justify-center gap-3 md:gap-4 max-w-3xl mx-auto p-2 bg-white/50 dark:bg-gray-900/50 backdrop-blur-xl rounded-3xl border border-gray-200/50 dark:border-gray-800/50 shadow-sm">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-6 py-2.5 rounded-2xl text-sm font-bold transition-all duration-300 ${
-                  selectedCategory === cat
-                    ? "bg-gradient-to-r from-orange-600 to-amber-500 text-white shadow-lg shadow-orange-500/30 transform scale-105"
-                    : "bg-transparent text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-800 hover:text-orange-500 dark:hover:text-orange-400"
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-        </motion.div>
+          {error && (
+            <motion.div 
+              initial={{ opacity: 0, x: -10 }} 
+              animate={{ opacity: 1, x: 0 }}
+              className="flex items-center gap-2 p-4 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-100 dark:border-red-900/50"
+            >
+              <FiAlertCircle className="text-lg flex-shrink-0" />
+              <p>{error}</p>
+            </motion.div>
+          )}
 
-        {loading ? (
-          <div className="flex flex-col justify-center items-center h-64 gap-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
-            <p className="text-gray-500 dark:text-gray-400 font-medium">Curating recipes for you...</p>
-          </div>
-        ) : recipes.length === 0 ? (
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-24 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl border border-gray-100 dark:border-gray-800 shadow-xl"
-          >
-            <div className="w-20 h-20 bg-gray-50 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-400">
-              <FiSearch className="text-3xl" />
+          <div className="space-y-5">
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-orange-500 transition-colors">
+                <FiMail className="text-lg" />
+              </div>
+              <input
+                type="email" 
+                required 
+                placeholder="Email Address"
+                className="block w-full pl-11 pr-4 py-3.5 bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all duration-300"
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              />
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">No recipes found</h3>
-            <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-              We couldn't find any recipes in the "{selectedCategory}" category at the moment.
-            </p>
-          </motion.div>
-        ) : (
-          <motion.div 
-            variants={containerVariants}
-            initial="hidden"
-            animate="show"
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
-          >
-            {recipes.map((recipe) => (
-              <motion.div 
-                variants={itemVariants}
-                key={recipe._id} 
-                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl border border-gray-100 dark:border-gray-800 transition-all duration-500 group flex flex-col transform hover:-translate-y-1"
+            
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-orange-500 transition-colors">
+                <FiLock className="text-lg" />
+              </div>
+              <input
+                type={showPassword ? "text" : "password"}
+                required 
+                placeholder="Password"
+                className="block w-full pl-11 pr-12 py-3.5 bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all duration-300"
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-orange-500 cursor-pointer transition-colors focus:outline-none"
               >
-                <div className="h-56 overflow-hidden relative">
-                  <img 
-                    src={recipe.recipeImage || "https://via.placeholder.com/400"} 
-                    alt={recipe.recipeName} 
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out" 
-                  />
-                  
-                  <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300"></div>
-                  
-                  <div className="absolute top-4 right-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm z-10 border border-white/20 dark:border-gray-700/50">
-                    <FaHeart className="text-orange-500 text-sm" /> 
-                    <span className="text-xs font-extrabold text-gray-900 dark:text-white">
-                      {recipe.likesCount || 0}
-                    </span>
-                  </div>
+                {showPassword ? <FiEyeOff className="text-lg" /> : <FiEye className="text-lg" />}
+              </button>
+            </div>
+          </div>
 
-                  <div className="absolute bottom-4 left-4 z-10">
-                    <span className="px-3 py-1 bg-orange-500 text-white text-[10px] font-black uppercase tracking-widest rounded-lg shadow-sm">
-                      {recipe.category}
-                    </span>
-                  </div>
-                </div>
-                
-                <div className="p-6 flex flex-col flex-grow">
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 line-clamp-2 group-hover:text-orange-500 dark:group-hover:text-orange-400 transition-colors">
-                    {recipe.recipeName}
-                  </h3>
-                  
-                  <div className="flex items-center gap-2 mb-6 text-gray-500 dark:text-gray-400 flex-grow">
-                    <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-orange-500">
-                      <FiUser className="text-xs" />
-                    </div>
-                    <span className="text-sm font-semibold truncate">
-                      {recipe.authorName}
-                    </span>
-                  </div>
-                  
-                  <Link 
-                    href={`/recipes/${recipe._id}`} 
-                    className="block text-center w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-bold py-3.5 rounded-xl group-hover:bg-gradient-to-r group-hover:from-orange-600 group-hover:to-amber-500 group-hover:text-white transition-all duration-300 shadow-sm"
-                  >
-                    View Recipe
-                  </Link>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        )}
-      </div>
+          <div className="flex items-center justify-end">
+            <Link href="#" className="text-sm font-semibold text-orange-600 hover:text-orange-500 dark:text-orange-500 dark:hover:text-orange-400 transition-colors">
+              Forgot password?
+            </Link>
+          </div>
+
+          <button
+            type="submit" 
+            disabled={loading}
+            className="w-full flex justify-center items-center gap-2 py-3.5 px-4 border border-transparent rounded-xl shadow-lg shadow-orange-500/30 text-sm font-bold text-white bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-700 hover:to-amber-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 dark:focus:ring-offset-gray-900 disabled:opacity-70 disabled:cursor-not-allowed transform hover:-translate-y-0.5 transition-all duration-300"
+          >
+            {loading ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                Signing in...
+              </>
+            ) : "Sign in"}
+          </button>
+
+          <div className="mt-8 relative">
+            <div className="absolute inset-0 flex items-center" aria-hidden="true">
+              <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-4 bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400 font-medium">
+                Or continue with
+              </span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={googleSignIn}
+            className="w-full flex items-center justify-center gap-3 py-3.5 px-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-bold hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 dark:focus:ring-offset-gray-900 transform hover:-translate-y-0.5 transition-all duration-300 shadow-sm"
+          >
+            <FcGoogle className="text-2xl" />
+            Google
+          </button>
+        </form>
+
+        <div className="mt-8 text-center text-sm">
+          <p className="text-gray-600 dark:text-gray-400">
+            Don't have an account?{" "}
+            <Link href="/register" className="font-bold text-orange-600 hover:text-orange-700 dark:text-orange-500 dark:hover:text-orange-400 transition-colors">
+              Register here
+            </Link>
+          </p>
+        </div>
+      </motion.div>
     </div>
   );
 }
