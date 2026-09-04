@@ -5,7 +5,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { axiosSecure } from "@/lib/axios";
-import Cookies from "js-cookie";
 import { motion } from "framer-motion";
 import { FcGoogle } from "react-icons/fc";
 import { FiMail, FiLock, FiAlertCircle, FiEye, FiEyeOff } from "react-icons/fi";
@@ -27,13 +26,12 @@ export default function LoginPage() {
     try {
       const res = await axiosSecure.post("/auth/login", formData);
       if (res.status === 200) {
-        Cookies.set("token", "logged_in", { expires: 7 }); 
         
         localStorage.setItem("user", JSON.stringify({
-          name: res.data.name,
-          email: formData.email,
-          role: res.data.role,
-          image: res.data.image
+          name: res.data.user.name,
+          email: res.data.user.email,
+          role: res.data.user.role,
+          image: res.data.user.image
         }));
 
         toast.success("Login successful!");
@@ -109,7 +107,7 @@ export default function LoginPage() {
                 <FiLock className="text-lg" />
               </div>
               <input
-                type={showPassword ? "text" : "password"}
+                type="password"
                 required 
                 placeholder="Password"
                 className="block w-full pl-11 pr-12 py-3.5 bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all duration-300"
@@ -126,7 +124,7 @@ export default function LoginPage() {
           </div>
 
           <div className="flex items-center justify-end">
-            <Link href="#" className="text-sm font-semibold text-orange-600 hover:text-orange-500 dark:text-orange-500 dark:hover:text-orange-400 transition-colors">
+            <Link href="#" className="text-sm font-semibold text-orange-600 hover:text-orange-500 dark:text-orange-500 dark:hover:text-orange-400 transition-colors cursor-pointer">
               Forgot password?
             </Link>
           </div>
@@ -134,7 +132,7 @@ export default function LoginPage() {
           <button
             type="submit" 
             disabled={loading}
-            className="w-full flex justify-center items-center gap-2 py-3.5 px-4 border border-transparent rounded-xl shadow-lg shadow-orange-500/30 text-sm font-bold text-white bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-700 hover:to-amber-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 dark:focus:ring-offset-gray-900 disabled:opacity-70 disabled:cursor-not-allowed transform hover:-translate-y-0.5 transition-all duration-300"
+            className="w-full flex justify-center items-center gap-2 py-3.5 px-4 border border-transparent rounded-xl shadow-lg shadow-orange-500/30 text-sm font-bold text-white bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-700 hover:to-amber-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 dark:focus:ring-offset-gray-900 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed transform hover:-translate-y-0.5 transition-all duration-300"
           >
             {loading ? (
               <>
@@ -158,7 +156,7 @@ export default function LoginPage() {
           <button
             type="button"
             onClick={googleSignIn}
-            className="w-full flex items-center justify-center gap-3 py-3.5 px-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-bold hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 dark:focus:ring-offset-gray-900 transform hover:-translate-y-0.5 transition-all duration-300 shadow-sm"
+            className="w-full flex items-center justify-center gap-3 py-3.5 px-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-bold hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 dark:focus:ring-offset-gray-900 cursor-pointer transform hover:-translate-y-0.5 transition-all duration-300 shadow-sm"
           >
             <FcGoogle className="text-2xl" />
             Google
@@ -168,7 +166,7 @@ export default function LoginPage() {
         <div className="mt-8 text-center text-sm">
           <p className="text-gray-600 dark:text-gray-400">
             Don't have an account?{" "}
-            <Link href="/register" className="font-bold text-orange-600 hover:text-orange-700 dark:text-orange-500 dark:hover:text-orange-400 transition-colors">
+            <Link href="/register" className="font-bold text-orange-600 hover:text-orange-700 dark:text-orange-500 dark:hover:text-orange-400 transition-colors cursor-pointer">
               Register here
             </Link>
           </p>
