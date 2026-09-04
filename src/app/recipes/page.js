@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { axiosSecure } from "../lib/axios";
 import Link from "next/link";
 import { FiHeart, FiUser, FiSearch, FiArrowRight } from "react-icons/fi";
 import { motion } from "framer-motion";
@@ -18,10 +18,10 @@ export default function AllRecipesPage() {
       setLoading(true);
       try {
         const url = selectedCategory && selectedCategory !== "All"
-          ? `${process.env.NEXT_PUBLIC_SERVER_URL}/recipes?category=${selectedCategory}`
-          : `${process.env.NEXT_PUBLIC_SERVER_URL}/recipes`;
+          ? `/recipes?category=${selectedCategory}`
+          : `/recipes`;
           
-        const res = await axios.get(url);
+        const res = await axiosSecure.get(url);
         
         const fetchedData = Array.isArray(res.data) 
           ? res.data 
