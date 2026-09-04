@@ -25,8 +25,14 @@ export default function ProfilePage() {
   const fetchProfile = async () => {
     try {
       const res = await axiosSecure.get("/users/profile");
-      setUser(res.data);
-      setName(res.data.name);
+      if (res.data) {
+        setUser(res.data);
+        setName(res.data.name);
+
+        
+        const currentLocal = JSON.parse(localStorage.getItem("user")) || {};
+        localStorage.setItem("user", JSON.stringify({ ...currentLocal, ...res.data }));
+      }
     } catch (error) {
       console.error("Profile fetch error:", error);
     } finally {
@@ -99,6 +105,8 @@ export default function ProfilePage() {
     );
   }
 
+  const userRole = user?.role || "user";
+
   return (
     <div className="max-w-6xl mx-auto pb-12">
       <div className="mb-8">
@@ -133,9 +141,9 @@ export default function ProfilePage() {
               </div>
               
               <div className="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
-                <FiShield className={`text-lg ${user?.role === 'admin' ? 'text-indigo-500' : 'text-orange-500'}`} />
+                <FiShield className={`text-lg ${userRole === 'admin' ? 'text-indigo-500' : 'text-orange-500'}`} />
                 <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 capitalize tracking-wide">
-                  {user?.role || "User"} Account
+                  {userRole} Account
                 </span>
               </div>
             </div>
