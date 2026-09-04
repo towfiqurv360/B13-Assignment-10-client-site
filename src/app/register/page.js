@@ -7,6 +7,7 @@ import Link from "next/link";
 import { axiosSecure } from "@/lib/axios";
 import { motion } from "framer-motion";
 import { FiUser, FiMail, FiLock, FiImage, FiAlertCircle, FiUserPlus, FiEye, FiEyeOff } from "react-icons/fi";
+import { FcGoogle } from "react-icons/fc"; 
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -31,6 +32,11 @@ export default function RegisterPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoogleRegister = () => {
+    toast("Please use the Login page for Google Sign-in", { icon: 'ℹ️' });
+    router.push("/login");
   };
 
   return (
@@ -150,8 +156,31 @@ export default function RegisterPage() {
               </>
             ) : "Create Account"}
           </button>
-
         </form>
+
+        <div className="mt-6">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300 dark:border-gray-700"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-3 bg-white dark:bg-gray-900 text-gray-500 rounded-full">
+                Or continue with
+              </span>
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <button
+              onClick={handleGoogleRegister}
+              type="button"
+              className="w-full flex justify-center items-center gap-3 py-3 px-4 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm bg-white dark:bg-gray-800 text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-300"
+            >
+              <FcGoogle className="text-2xl" />
+              Sign up with Google
+            </button>
+          </div>
+        </div>
 
         <div className="mt-8 text-center text-sm">
           <p className="text-gray-600 dark:text-gray-400">
