@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { axiosSecure } from "../lib/axios";
+import { axiosSecure } from "@/lib/axios";
 import Link from "next/link";
 import { FiHeart, FiUser, FiSearch, FiArrowRight } from "react-icons/fi";
 import { motion } from "framer-motion";

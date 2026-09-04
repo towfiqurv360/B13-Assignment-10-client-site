@@ -13,6 +13,8 @@ export default function RecipeDetails() {
   const [loading, setLoading] = useState(true);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [reportReason, setReportReason] = useState("");
+  const [isLiked, setIsLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState(0);
 
   useEffect(() => {
     fetchRecipeDetails();
@@ -22,19 +24,29 @@ export default function RecipeDetails() {
     try {
       const res = await axiosSecure.get(`/recipes/${id}`);
       setRecipe(res.data);
+      setLikesCount(res.data.likesCount || 0);
+      if (res.data.isLikedByUser !== undefined) {
+        setIsLiked(res.data.isLikedByUser);
+      }
     } catch (error) {
-      toast.error("Error fetching recipe");
+      toast.error(error.response?.data?.message || "Error fetching recipe");
     } finally {
       setLoading(false);
     }
   };
 
   const handleLike = async () => {
+    const newLikedState = !isLiked;
+    setIsLiked(newLikedState);
+    setLikesCount((prev) => (newLikedState ? prev + 1 : prev - 1));
+
     try {
       await axiosSecure.patch(`/recipes/${id}/like`);
-      fetchRecipeDetails(); 
+      toast.success(newLikedState ? "Recipe liked!" : "Like removed!");
     } catch (error) {
-      toast.error("Please login to like this recipe.");
+      setIsLiked(!newLikedState);
+      setLikesCount((prev) => (newLikedState ? prev - 1 : prev + 1));
+      toast.error(error.response?.data?.message || "Failed to update like status.");
     }
   };
 
@@ -43,7 +55,7 @@ export default function RecipeDetails() {
       await axiosSecure.post("/favorites", { recipeId: id });
       toast.success("Added to favorites!");
     } catch (error) {
-      toast.error("Please login to add to favorites.");
+      toast.error(error.response?.data?.message || "Failed to add to favorites.");
     }
   };
 
@@ -55,7 +67,7 @@ export default function RecipeDetails() {
       setIsReportModalOpen(false);
       setReportReason("");
     } catch (error) {
-      toast.error("Failed to report recipe.");
+      toast.error(error.response?.data?.message || "Failed to report recipe.");
     }
   };
 
@@ -154,8 +166,8 @@ export default function RecipeDetails() {
                   onClick={handleLike} 
                   className="flex items-center gap-2 px-5 py-2.5 bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 rounded-full font-medium transition-all"
                 >
-                  <FiHeart className={recipe.likesCount > 0 ? "fill-orange-500 text-orange-500" : ""} /> 
-                  <span>{recipe.likesCount || 0}</span>
+                  <FiHeart className={isLiked ? "fill-orange-500 text-orange-500" : ""} /> 
+                  <span>{likesCount}</span>
                 </button>
                 <button 
                   onClick={handleFavorite} 

@@ -1,15 +1,20 @@
 import axios from "axios";
 
-const isProduction = process.env.NODE_ENV === "production";
-const liveServerUrl = "https://b13-assignment-10-server-site.onrender.com/api";
-const localServerUrl = "http://localhost:5000/api";
+const liveServerUrl = "https://b13-assignment-10-server-site.onrender.com";
+const localServerUrl = "http://localhost:5000";
 
-let envBaseUrl = process.env.NEXT_PUBLIC_SERVER_URL;
-if (envBaseUrl && !envBaseUrl.endsWith('/api')) {
-  envBaseUrl = `${envBaseUrl}/api`;
-}
+const getBaseUrl = () => {
+  if (typeof window !== "undefined") {
+    
+    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+      return localServerUrl;
+    }
+  }
+  
+  return process.env.NEXT_PUBLIC_SERVER_URL || liveServerUrl;
+};
 
 export const axiosSecure = axios.create({
-  baseURL: envBaseUrl || (isProduction ? liveServerUrl : localServerUrl),
+  baseURL: getBaseUrl(),
   withCredentials: true,
 });

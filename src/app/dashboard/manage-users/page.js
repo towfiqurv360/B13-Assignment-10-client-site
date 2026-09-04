@@ -20,7 +20,9 @@ export default function ManageUsersPage() {
       const res = await axiosSecure.get("/users");
       setUsers(res.data);
     } catch (error) {
-      toast.error("Failed to load users. Are you an Admin?");
+      // ডায়নামিক এরর মেসেজ অ্যাড করা হয়েছে
+      const errorMsg = error.response?.data?.message || "Failed to load users. Are you an Admin?";
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -38,7 +40,8 @@ export default function ManageUsersPage() {
       
       fetchUsers(); 
     } catch (error) {
-      toast.error("Failed to update role");
+      const errorMsg = error.response?.data?.message || "Failed to update role";
+      toast.error(errorMsg);
     }
   };
 
@@ -55,7 +58,8 @@ export default function ManageUsersPage() {
 
       fetchUsers();
     } catch (error) {
-      toast.error("Failed to update premium status");
+      const errorMsg = error.response?.data?.message || "Failed to update premium status";
+      toast.error(errorMsg);
     }
   };
 
