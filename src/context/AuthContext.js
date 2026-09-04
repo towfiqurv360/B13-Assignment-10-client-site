@@ -66,7 +66,7 @@ export const AuthProvider = ({ children }) => {
         image: firebaseUser.photoURL,
       });
 
-      if (res.status === 200) {
+      if (res.status === 200 || res.status === 201) { 
         const userData = res.data.user;
         login({
           id: userData.id,
