@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { axios } from "@/lib/axios";
+import { axiosSecure } from "../lib/axios";
+
 import { 
   FaHeart, 
   FaUsers, 
