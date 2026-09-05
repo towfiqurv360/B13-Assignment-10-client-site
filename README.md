@@ -16,10 +16,10 @@
 
 ## 🌐 Live Project & Repositories
 
-- 🔗 **Live Website:** [RecipeHub Live URL](#) *(https://b13-assignment-10-recipehub.vercel.app/)*
-- 🔗 **Live serversite:** [RecipeHub Live URL](#) *(https://b13-assignment-10-server-site.onrender.com)*
-- 🔗 **Client Repository:** [Frontend Source Code](#) *(Replace with your Client GitHub link)*
-- 🔗 **Server Repository:** [Backend Source Code](#) *(Replace with your Server GitHub link)*
+- 🔗 **Live Website:** [RecipeHub Live URL] *(https://b13-assignment-10-recipehub.vercel.app/)*
+- 🔗 **Live serversite:** [RecipeHub Live URL] *(https://b13-assignment-10-server-site.onrender.com)*
+- 🔗 **Client Repository:** *(https://github.com/towfiqurv360/B13-Assignment-10-client-site.git)*
+- 🔗 **Server Repository:** *(https://github.com/towfiqurv360/B13-Assignment-10-server-site.git)*
 
 ---
 
